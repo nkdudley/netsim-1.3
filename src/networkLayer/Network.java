@@ -32,7 +32,7 @@ public abstract class Network {
 
     public abstract void receiveFromTransport(byte[] p);
 
-    public abstract void recieveFromLink(byte[] f);
+    public abstract void receiveFromLink(byte[] f);
 
     public abstract byte[] toRawBytes(NetworkPacket p);
     public abstract NetworkPacket fromRawBytes(byte[] bits);

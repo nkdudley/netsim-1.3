@@ -30,7 +30,7 @@ public class NoNetwork extends Network {
     }
 
     @Override
-    public void recieveFromLink(byte[] bits) {
+    public void receiveFromLink(byte[] bits) {
         getTransportLayer().receiveFromNetwork(bits);
     }
 

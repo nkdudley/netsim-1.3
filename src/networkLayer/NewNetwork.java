@@ -2,7 +2,7 @@ package networkLayer;
 
 import linkLayer.Link;
 
-public class NewNetwork extends Network{
+public class NewNetwork extends Network {
 
     @Override
     public void bringDown() {
@@ -26,7 +26,7 @@ public class NewNetwork extends Network{
     }
 
     @Override
-    public void recieveFromLink(byte[] f) {
+    public void receiveFromLink(byte[] f) {
 
     }
 
@@ -41,6 +41,12 @@ public class NewNetwork extends Network{
 
     @Override
     public NetworkPacket fromRawBytes(byte[] bits) {
-        return null;
+        byte[] metadata = new byte[4];
+        System.arraycopy(bits,0,metadata,0,4);
+        Meta meta = new Meta(metadata);
+        byte[] data = new byte[4];
+        System.arraycopy(bits,4,data,0,4);
+        NetworkPacket packet = new NetworkPacket(meta,data);
+        return packet;
     }
 }
