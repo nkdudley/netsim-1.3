@@ -1,9 +1,16 @@
 package networkLayer;
 
+import configurator.Configurable;
 import linkLayer.Link;
+import physicalLayer.PipeBackedPort;
 
-public class NewNetwork extends Network {
+import java.io.PipedInputStream;
 
+public class NewNetwork extends Network implements Configurable {
+
+    private byte address;
+
+    public byte getAddress(){return address;}
     @Override
     public void bringDown() {
 
@@ -20,8 +27,11 @@ public class NewNetwork extends Network {
         //the first byte will be the addressTo
         byte to = p[0];
         for(Link l: links){
-            //if this link is addressed to the same one as the metadata expects it to be
-            //then send the message on this link
+            if(((NewNetwork) ((PipeBackedPort) l.getPhysicalLayer()).getOtherPort().getLinkLayer().getNetworkLayer()).getAddress() == to){
+                //maybe we need to reconfigure p first asa a link frame
+                l.receiveFromNetwork(p);
+            }
+
         }
     }
 
@@ -48,5 +58,16 @@ public class NewNetwork extends Network {
         System.arraycopy(bits,4,data,0,4);
         NetworkPacket packet = new NetworkPacket(meta,data);
         return packet;
+    }
+
+    @Override
+    public void configureWith(String s) {
+        //take s and cast it to an integer
+        int num = Integer.parseInt(s);
+        //then cast the integer to a byte
+        byte addrs = (byte) num;
+        //assign the address to the byte
+        address = addrs;
+
     }
 }

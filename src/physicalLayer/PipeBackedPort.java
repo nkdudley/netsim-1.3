@@ -29,6 +29,16 @@ public class PipeBackedPort extends Port implements Runnable {
         sndQueue = new LinkedBlockingQueue<byte[]>();
     }
 
+    public Port getOtherPort(){
+        if(!wire.isCut()){
+            if(wire.getPortA() != this){
+                return wire.getPortA();
+            } else if(wire.getPortB() != this){
+                return wire.getPortB();
+            }
+        }
+        return null;
+    }
     /**
      * Safely start the port
      */

@@ -28,7 +28,7 @@ public class NoLink extends Link
     @Override
     public void receiveFromPhysical(byte[] bits) {
         LinkFrame lf = fromRawBytes(bits);
-        getNetworkLayer().recieveFromLink(lf.data());
+        getNetworkLayer().receiveFromLink(lf.data());
     }
 
     @Override
