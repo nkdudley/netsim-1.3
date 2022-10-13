@@ -5,12 +5,16 @@ import linkLayer.Link;
 import physicalLayer.PipeBackedPort;
 
 import java.io.PipedInputStream;
+import java.util.ArrayList;
 
 public class NewNetwork extends Network implements Configurable {
 
+
     private byte address;
+    private DestinationTable destinations = new DestinationTable(this);
 
     public byte getAddress(){return address;}
+
     @Override
     public void bringDown() {
 
@@ -25,13 +29,14 @@ public class NewNetwork extends Network implements Configurable {
     public void receiveFromTransport(byte[] p) {
         //get the port we would like to send to with the
         byte to = p[0];
-        for(Link l: links){
-            if(((NewNetwork) ((PipeBackedPort) l.getPhysicalLayer()).getOtherPort().getLinkLayer().getNetworkLayer()).getAddress() == to){
-                //maybe we need to reconfigure p first asa a link frame
-                l.receiveFromNetwork(p);
-            }
-
-        }
+        destinations.populateTable();
+//        for(Link l: links){
+//            if(((NewNetwork) ((PipeBackedPort) l.getPhysicalLayer()).getOtherPort().getLinkLayer().getNetworkLayer()).getAddress() == to){
+//                //maybe we need to reconfigure p first asa a link frame
+//                l.receiveFromNetwork(p);
+//
+//            }
+//        }
     }
 
     @Override
@@ -61,12 +66,15 @@ public class NewNetwork extends Network implements Configurable {
 
     @Override
     public void configureWith(String s) {
-        //take s and cast it to an integer
+        //take s and cast it to an integer and the int to a byte so that
+        //the byte value is the value of the int not its asci values
         int num = Integer.parseInt(s);
-        //then cast the integer to a byte
         byte addrs = (byte) num;
+
         //assign the address to the byte
         address = addrs;
-
+        destinations.populateTable();
     }
+
+    public DestinationTable getDestinations(){return destinations;}
 }
