@@ -2,11 +2,14 @@ package applicationLayer;
 
 import configurator.Logger;
 
+import java.nio.charset.StandardCharsets;
+
 public class MsgSendApp extends Application implements Runnable {
     /** thread for sending the characters */
     Thread execThread;
     /** message text to send */
     String myMsg;
+    byte destination;
 
     /**
      * Does nothing
@@ -33,7 +36,9 @@ public class MsgSendApp extends Application implements Runnable {
      */
     @Override
     public void recvLaunchArgs(String args) {
-        myMsg = args;
+        String[] msgInfo = args.split(" ");
+        destination = (byte) Integer.parseInt(msgInfo[0]);
+        myMsg = msgInfo[1];
     }
 
     /**
@@ -41,15 +46,16 @@ public class MsgSendApp extends Application implements Runnable {
      */
     @Override
     public void run() {
+        byte[] packet = new byte[myMsg.length() + 1];
         byte[] msg = myMsg.getBytes();
-        byte[] buf = new byte[1];
-        for(int i=0; i<msg.length; i++) {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {}
-            buf[0] = msg[i];
-            getTransport().receiveFromApplication(this, buf);
+        packet[0] = destination;
+        for(int i = 1; i <= myMsg.length(); i++){
+            packet[i] = msg[i-1];
         }
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {}
+        getTransport().receiveFromApplication(this, packet);
         getTransport().removeApplication(this);
 
     }

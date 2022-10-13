@@ -24,7 +24,7 @@ public class NewNetwork extends Network implements Configurable {
     @Override
     public void receiveFromTransport(byte[] p) {
         //get the port we would like to send to with the
-        byte to = 2;
+        byte to = p[0];
         for(Link l: links){
             if(((NewNetwork) ((PipeBackedPort) l.getPhysicalLayer()).getOtherPort().getLinkLayer().getNetworkLayer()).getAddress() == to){
                 //maybe we need to reconfigure p first asa a link frame
