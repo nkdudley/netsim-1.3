@@ -12,10 +12,15 @@ public class DestinationTable {
     public DestinationTable(NewNetwork network){
         owner = network;
         destinations = new ArrayList<byte[]>();
-
+        byte[] me = new byte[3];
+        me[0] = owner.getAddress();
+        me[1] = -1;
+        me[2] = 0;
+        destinations.add(me);
     }
 
     public void populateTable(){
+        destinations = new ArrayList<byte[]>();
         byte[] me = new byte[3];
         me[0] = owner.getAddress();
         me[1] = -1;

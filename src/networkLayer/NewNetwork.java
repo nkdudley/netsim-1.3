@@ -11,7 +11,7 @@ public class NewNetwork extends Network implements Configurable {
 
 
     private byte address;
-    private DestinationTable destinations = new DestinationTable(this);
+    private DestinationTable destinations;
 
     public byte getAddress(){return address;}
 
@@ -30,13 +30,7 @@ public class NewNetwork extends Network implements Configurable {
         //get the port we would like to send to with the
         byte to = p[0];
         destinations.populateTable();
-//        for(Link l: links){
-//            if(((NewNetwork) ((PipeBackedPort) l.getPhysicalLayer()).getOtherPort().getLinkLayer().getNetworkLayer()).getAddress() == to){
-//                //maybe we need to reconfigure p first asa a link frame
-//                l.receiveFromNetwork(p);
-//
-//            }
-//        }
+        links[destinations.getRoute(to)].receiveFromNetwork(p);
     }
 
     @Override
@@ -73,7 +67,7 @@ public class NewNetwork extends Network implements Configurable {
 
         //assign the address to the byte
         address = addrs;
-        destinations.populateTable();
+        destinations = new DestinationTable(this);
     }
 
     public DestinationTable getDestinations(){return destinations;}
