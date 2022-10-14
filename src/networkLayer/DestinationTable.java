@@ -8,6 +8,7 @@ import java.util.ArrayList;
 public class DestinationTable {
     NewNetwork owner;
     ArrayList<byte[]> destinations;
+    boolean populating;
 
     public DestinationTable(NewNetwork network){
         owner = network;
@@ -17,9 +18,11 @@ public class DestinationTable {
         me[1] = -1;
         me[2] = 0;
         destinations.add(me);
+        populating = false;
     }
 
     public void populateTable(){
+        populating = true;
         destinations = new ArrayList<byte[]>();
         byte[] me = new byte[3];
         me[0] = owner.getAddress();
@@ -31,19 +34,24 @@ public class DestinationTable {
         for(int i = 0; i < owner.links.length; i++){
             //get the destination table of the other node
             DestinationTable otherTable = ((NewNetwork) ((PipeBackedPort) owner.links[i].getPhysicalLayer()).getOtherPort().getLinkLayer().getNetworkLayer()).getDestinations();
+            if(!otherTable.populating){
+                otherTable.populateTable();
+            }
             //for each destination in the other node's table
             for(byte[] dest: otherTable.destinations){
                 //if the route does not exist
                 if(!routeExists(dest)){
+                    byte[] newDest = dest;
                     //update hop to be one more because i am the new node that we traverse to get to the destination
-                    dest[2] += 1;
+                    newDest[2] += 1;
                     // update the link to send to the port on my device, not the link number from the other device
-                    dest[1] = (byte) i;
+                    newDest[1] = (byte) i;
                     //add it to our table
-                    destinations.add(dest);
+                    destinations.add(newDest);
                 }
             }
         }
+        populating = false;
     }
 
     private boolean routeExists(byte[] dest){
