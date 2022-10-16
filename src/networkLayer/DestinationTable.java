@@ -21,6 +21,9 @@ public class DestinationTable {
         populating = false;
     }
 
+    /**
+     * updates the table with information of our neighbor's tables
+     */
     public void populateTable(){
         populating = true;
         destinations = new ArrayList<byte[]>();
@@ -41,19 +44,45 @@ public class DestinationTable {
             for(byte[] dest: otherTable.destinations){
                 //if the route does not exist
                 if(!routeExists(dest)){
-                    byte[] newDest = dest;
+                    byte[] newDest = new byte[3];
+                    System.arraycopy(dest, 0, newDest, 0, 3);
                     //update hop to be one more because i am the new node that we traverse to get to the destination
                     newDest[2] += 1;
                     // update the link to send to the port on my device, not the link number from the other device
                     newDest[1] = (byte) i;
                     //add it to our table
                     destinations.add(newDest);
+                } else {
+                    //route does already exist
+                    ArrayList<byte[]> routes = getRoutes(dest[0]);
+                    boolean samePort = false;
+                    // does it exist on this port?
+                    for(byte[] bytes: routes){
+                        if(bytes[1] == (byte) i){
+                            samePort = true;
+                            bytes[2] = (byte) Math.min(bytes[2], dest[2] + 1);
+                        }
+                    }
+                    if(!samePort){
+                        byte[] newDest = new byte[3];
+                        System.arraycopy(dest, 0, newDest, 0, 3);
+                        //update hop to be one more because i am the new node that we traverse to get to the destination
+                        newDest[2] += 1;
+                        // update the link to send to the port on my device, not the link number from the other device
+                        newDest[1] = (byte) i;
+                        //add it to our table
+                        destinations.add(newDest);
+                    }
                 }
             }
         }
         populating = false;
     }
 
+    /**
+     * @param dest - the destination of interest
+     * @return whether or not there is a known route
+     */
     private boolean routeExists(byte[] dest){
         for(byte[] d: destinations){
             if(d[0] == dest[0]){
@@ -63,16 +92,38 @@ public class DestinationTable {
         return false;
     }
 
-    public byte getRoute(byte dest){
-        //look through our table to find the destination
+    /**
+     * gets all the known routes to a given address
+     * through a unique port on this machine
+     * @param dest - the destination of interest
+     * @return
+     */
+    public ArrayList<byte[]> getRoutes(byte dest){
+        ArrayList<byte[]> output = new ArrayList<byte[]>();
         for(byte[] bytes: destinations){
-            //if the byte array in our table is regards the same address as dest
             if(bytes[0] == dest){
-                //give the port number to this address
-                return bytes[1];
+                output.add(bytes);
             }
         }
+        return output;
+    }
 
-        return -1;
+    /**
+     * finds the best route of all routes on our table to send through
+     * @param dest - destination address of interest
+     * @return - the port number with the fastest route
+     */
+    public byte getBestRoute(byte dest){
+        ArrayList<byte[]> routes = getRoutes(dest);
+        int outputNum = 0;
+        byte currentHops = routes.get(0)[2];
+        for(int i = 0; i < routes.size(); i++){
+            // if there number of hops is less than our current number of hops then update it all
+            if(currentHops > routes.get(i)[2]){
+                outputNum = i;
+                currentHops = routes.get(i)[2];
+            }
+        }
+        return routes.get(outputNum)[1];
     }
 }

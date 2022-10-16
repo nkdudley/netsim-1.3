@@ -11,7 +11,7 @@ public class NewNetwork extends Network implements Configurable {
 
 
     private byte address;
-    private DestinationTable destinations;
+    private DestinationTable table;
 
     public byte getAddress(){return address;}
 
@@ -29,13 +29,19 @@ public class NewNetwork extends Network implements Configurable {
     public void receiveFromTransport(byte[] p) {
         //get the port we would like to send to with the
         byte to = p[0];
-        destinations.populateTable();
-        links[destinations.getRoute(to)].receiveFromNetwork(p);
+        table.populateTable();
+        links[table.getBestRoute(to)].receiveFromNetwork(p);
     }
 
     @Override
     public void receiveFromLink(byte[] f) {
-        getTransportLayer().receiveFromNetwork(f);
+        //if this is the final destination then call receive from network
+        if(f[0] == address) {
+            getTransportLayer().receiveFromNetwork(f);
+        } else{
+            links[table.getBestRoute(f[0])].receiveFromNetwork(f);
+        }
+        //otherwise find the address in my table and send it along
     }
 
     @Override
@@ -67,8 +73,8 @@ public class NewNetwork extends Network implements Configurable {
 
         //assign the address to the byte
         address = addrs;
-        destinations = new DestinationTable(this);
+        table = new DestinationTable(this);
     }
 
-    public DestinationTable getDestinations(){return destinations;}
+    public DestinationTable getDestinations(){return table;}
 }
