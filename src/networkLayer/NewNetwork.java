@@ -36,6 +36,7 @@ public class NewNetwork extends Network implements Configurable {
     @Override
     public void receiveFromLink(byte[] f) {
         //if this is the final destination then call receive from network
+        System.out.println(address + " was passed the packet");
         if(f[0] == address) {
             getTransportLayer().receiveFromNetwork(f);
         } else{
