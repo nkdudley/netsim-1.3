@@ -42,28 +42,9 @@ public class DestinationTable {
             }
             //for each destination in the other node's table
             for(byte[] dest: otherTable.destinations){
-                //if the route does not exist
-                if(!routeExists(dest)){
-                    byte[] newDest = new byte[3];
-                    System.arraycopy(dest, 0, newDest, 0, 3);
-                    //update hop to be one more because i am the new node that we traverse to get to the destination
-                    newDest[2] += 1;
-                    // update the link to send to the port on my device, not the link number from the other device
-                    newDest[1] = (byte) i;
-                    //add it to our table
-                    destinations.add(newDest);
-                } else {
-                    //route does already exist
-                    ArrayList<byte[]> routes = getRoutes(dest[0]);
-                    boolean samePort = false;
-                    // does it exist on this port?
-                    for(byte[] bytes: routes){
-                        if(bytes[1] == (byte) i){
-                            samePort = true;
-                            bytes[2] = (byte) Math.min(bytes[2], dest[2] + 1);
-                        }
-                    }
-                    if(!samePort){
+                if(dest[0] != me[0]) {
+                    //if the route does not exist
+                    if(!routeExists(dest)){
                         byte[] newDest = new byte[3];
                         System.arraycopy(dest, 0, newDest, 0, 3);
                         //update hop to be one more because i am the new node that we traverse to get to the destination
@@ -72,11 +53,48 @@ public class DestinationTable {
                         newDest[1] = (byte) i;
                         //add it to our table
                         destinations.add(newDest);
+                    } else {
+                        //route does already exist
+                        ArrayList<byte[]> routes = getRoutes(dest[0]);
+                        boolean samePort = false;
+                        // does it exist on this port?
+                        for(byte[] bytes: routes){
+                            if(bytes[1] == (byte) i){
+                                samePort = true;
+                                bytes[2] = (byte) Math.min(bytes[2], dest[2] + 1);
+                                replaceWith(bytes);
+                            }
+                        }
+                        if(!samePort){
+                            byte[] newDest = new byte[3];
+                            System.arraycopy(dest, 0, newDest, 0, 3);
+                            //update hop to be one more because i am the new node that we traverse to get to the destination
+                            newDest[2] += 1;
+                            // update the link to send to the port on my device, not the link number from the other device
+                            newDest[1] = (byte) i;
+                            //add it to our table
+                            destinations.add(newDest);
+                        }
                     }
                 }
             }
         }
         populating = false;
+    }
+
+    /**
+     *
+     * @param newRoute - the updated route for a given port
+     */
+    public void replaceWith(byte[] newRoute) {
+        byte[] oldRoute = new byte[3];
+        for(byte[] d: destinations) {
+            if(d[0] == newRoute[0] && d[1] == newRoute[1]) {
+                oldRoute = d;
+            }
+        }
+        destinations.remove(oldRoute);
+        destinations.add(newRoute);
     }
 
     /**

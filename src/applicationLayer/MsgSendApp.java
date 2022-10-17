@@ -37,6 +37,7 @@ public class MsgSendApp extends Application implements Runnable {
     @Override
     public void recvLaunchArgs(String args) {
         String[] msgInfo = args.split(" ");
+
         destination = (byte) Integer.parseInt(msgInfo[0]);
         myMsg = msgInfo[1];
     }
@@ -57,6 +58,5 @@ public class MsgSendApp extends Application implements Runnable {
         } catch (InterruptedException e) {}
         getTransport().receiveFromApplication(this, packet);
         getTransport().removeApplication(this);
-
     }
 }
